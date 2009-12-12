@@ -1,0 +1,49 @@
+---
+name: Test-Reporter-POEGateway
+version: 0.01
+author:
+  - 'Apocalypse <APOCAL@cpan.org>'
+abstract: A Test::Reporter::HTTPGateway using the power of POE
+license: perl
+resources:
+  bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Test-Reporter-POEGateway
+  homepage: http://search.cpan.org/dist/Test-Reporter-POEGateway
+  license: http://dev.perl.org/licenses/
+  repository: http://github.com/apocalypse/perl-test-reporter-poegateway
+requires:
+  Digest::SHA: 0
+  Email::MessageID: 0
+  Email::Simple: 0
+  File::Copy: 0
+  File::Spec: 0
+  HTTP::Request::Params: 0
+  Net::SMTP: 0
+  POE: 0
+  POE::Component::DirWatch: 0
+  POE::Component::Server::SimpleHTTP: 0
+  POE::Filter::Line: 0
+  POE::Filter::Reference: 0
+  POE::Session::AttributeBased: 0
+  POE::Wheel::Run: 0
+  YAML::Tiny: 0
+  perl: 5.006
+recommends:
+  Authen::SASL: 0
+  Net::SMTP::SSL: 0
+configure_requires:
+  Module::Build: 0.35
+dynamic_config: 0
+provides:
+  Test::Reporter::POEGateway:
+    file: lib/Test/Reporter/POEGateway.pm
+    version: 0.01
+  Test::Reporter::POEGateway::Mailer:
+    file: lib/Test/Reporter/POEGateway/Mailer.pm
+    version: 0.01
+  Test::Reporter::POEGateway::Mailer::SMTP:
+    file: lib/Test/Reporter/POEGateway/Mailer/SMTP.pm
+    version: 0.01
+generated_by: Module::Build version 0.35
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
