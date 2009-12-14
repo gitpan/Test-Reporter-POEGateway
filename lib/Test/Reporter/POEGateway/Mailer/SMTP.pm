@@ -4,7 +4,7 @@ use strict; use warnings;
 
 # Initialize our version
 use vars qw( $VERSION );
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 # Load some necessary modules
 use POE::Filter::Reference;
@@ -51,10 +51,10 @@ sub main {
 			} elsif ( $input->{'ACTION'} eq 'SEND' ) {
 				# Send a report!
 				my $ret = DO_SEND( $input->{'DATA'} );
-				if ( defined $ret ) {
-					print "NOK $ret\n";
+				if ( $ret->[0] ) {
+					print "OK $ret->[1]\n";
 				} else {
-					print "OK\n";
+					print "NOK $ret->[1]\n";
 				}
 			} else {
 				# Unrecognized action!
@@ -109,16 +109,32 @@ sub setup_smtp {
 		%{ $config->{'smtp_opts'} },
 	);
 
+	if ( ! defined $smtp ) {
+		return "Unable to connect to the smtp server";
+	}
+
 	# Do AUTH if needed
 	if ( exists $config->{'auth_user'} ) {
 		if ( ! $smtp->auth( $config->{'auth_user'}, $config->{'auth_pass'} ) ) {
-			$smtp->quit;
-			undef $smtp;
-			return "Unable to AUTH to the smtp server";
+			return smtp_error( "Unable to AUTH to the smtp server" );
 		}
 	}
 
 	return;
+}
+
+# return an error and cleanup smtp
+sub smtp_error {
+	my $err = shift;
+
+	my $msg = $smtp->message;
+	$msg =~ s/\s+\z//;				# damn Net::SMTP/Cmd not chomping it!
+	$err .= ": '$msg' (" . $smtp->code() . ")";
+
+	$smtp->quit;
+	undef $smtp;
+
+	return $err;
 }
 
 sub DO_SEND {
@@ -127,23 +143,20 @@ sub DO_SEND {
 	# init the smtp if needed
 	my $ret = setup_smtp();
 	if ( defined $ret ) {
-		return $ret;
+		return [ 0, $ret ];
 	}
 
 	# send it!
 	if ( ! $smtp->mail( $data->{'from'} ) ) {
-		$smtp->quit;
-		undef $smtp;
-		return "Unable to set 'from' address";
+		return [ 0, smtp_error( "Unable to set 'from' address" ) ];
 	}
 
 	if ( ! $smtp->to( $config->{'to'} ) ) {
-		$smtp->quit;
-		undef $smtp;
-		return "Unable to set 'to' address";
+		return [ 0, smtp_error( "Unable to set 'to' address" ) ];
 	}
 
 	# Prepare the data
+	my $id = Email::MessageID->new->as_string;
 	my $email = Email::Simple->create(
 		'body'		=> $data->{'report'},
 		'header'	=> [
@@ -151,18 +164,16 @@ sub DO_SEND {
 			'From'			=> $data->{'from'},
 			'Subject'		=> $data->{'subject'},
 			'X-Reported-Via'	=> $data->{'via'},
-			'Message-ID'		=> Email::MessageID->new->in_brackets,
+			'Message-ID'		=> '<' . $id . '>',	# required, look at Email::MessageID for the note!
 		],
 	);
 
 	if ( ! $smtp->data( $email->as_string ) ) {
-		$smtp->quit;
-		undef $smtp;
-		return "Unable to send message";
+		return [ 0, smtp_error( "Unable to send message" ) ];
 	}
 
 	# Successful send of message!
-	return;
+	return [ 1, $id ];
 }
 
 1;
@@ -244,10 +255,6 @@ The default is: undef
 The password to use for SMTP AUTH to the server.
 
 The default is: undef
-
-=head1 EXPORT
-
-None.
 
 =head1 SEE ALSO
 
