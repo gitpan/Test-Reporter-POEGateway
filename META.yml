@@ -1,6 +1,6 @@
 ---
 name: Test-Reporter-POEGateway
-version: 0.02
+version: 0.03
 author:
   - 'Apocalypse <APOCAL@cpan.org>'
 abstract: A Test::Reporter::HTTPGateway using the power of POE
@@ -36,13 +36,13 @@ dynamic_config: 0
 provides:
   Test::Reporter::POEGateway:
     file: lib/Test/Reporter/POEGateway.pm
-    version: 0.02
+    version: 0.03
   Test::Reporter::POEGateway::Mailer:
     file: lib/Test/Reporter/POEGateway/Mailer.pm
-    version: 0.02
+    version: 0.03
   Test::Reporter::POEGateway::Mailer::SMTP:
     file: lib/Test/Reporter/POEGateway/Mailer/SMTP.pm
-    version: 0.02
+    version: 0.03
 generated_by: Module::Build version 0.35
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
